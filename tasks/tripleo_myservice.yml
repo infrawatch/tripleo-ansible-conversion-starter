@@ -1,0 +1,33 @@
+---
+- set_fact:
+    tripleo_myservice_dir: "{{ output_dir }}/tripleo_{{ myservice }}/"
+    myservice_titlecase: "{{ myservice|title }}"
+    deploy_stages:
+      - host_prep_tasks
+      - external_deploy_tasks
+      - deploy_steps_tasks
+      - fast_forward_upgrade_tasks
+- debug:
+    var: "{{ item }}"
+  loop:
+    - tripleo_myservice_dir
+    - myservice_titlecase
+
+- name: Create the output dir
+  file:
+    path: "{{tripleo_myservice_dir }}/tasks/"
+    state: directory
+
+- name: Render main.yml for tripleo_{{ myservice }} role
+  template:
+    src: tripleo_myservice/tasks/main.yml.j2
+    dest: "{{ tripleo_myservice_dir }}/tasks/main.yml"
+    force: yes
+
+- name: Render tasks for each deploy_stage
+  template:
+    src: tripleo_myservice/tasks/deploy_stage.yml.j2
+    dest: "{{ tripleo_myservice_dir }}/tasks/{{ item }}.yml"
+  vars:
+    deploy_stage: "{{ item }}"
+  loop: "{{ deploy_stages }}"
