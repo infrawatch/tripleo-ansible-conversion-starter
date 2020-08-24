@@ -1,18 +1,4 @@
 ---
-- set_fact:
-    tripleo_myservice_dir: "{{ output_dir }}/tripleo_{{ myservice }}/"
-    myservice_titlecase: "{{ myservice|title }}"
-    deploy_stages:
-      - host_prep_tasks
-      - external_deploy_tasks
-      - deploy_steps_tasks
-      - fast_forward_upgrade_tasks
-- debug:
-    var: "{{ item }}"
-  loop:
-    - tripleo_myservice_dir
-    - myservice_titlecase
-
 - name: Create the output dir
   file:
     path: "{{tripleo_myservice_dir }}/tasks/"
