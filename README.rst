@@ -6,8 +6,11 @@ deploy a stf client-side services in TripleO. To "ansibilise" a TripleO
 service, you need to update the TripleO Heat template for the service, and also
 to create a role that can be called from TripleO during deployment.
 
-This tool creates a tripleo_<service> role, which is called by TripleO during
-the different deployment stages.
+This tool:
+  - creates a tripleo_<service> role, which is called by TripleO during
+    the different deployment stages.
+  - creates a <myservice>-container-ansible.yaml Heat template for use with
+    THT, which consumes the tripleo_<service> role for deployment
 
 To generate the role, use::
 

@@ -3,7 +3,4 @@
   hosts: localhost
   tasks:
     # Leave this task for now, and parse the vars from elsewhere later
-    #- set_fact:
-    #    myservice: test
-    #    output_dir: "/root/output/"
     - include_tasks: tasks/main.yml

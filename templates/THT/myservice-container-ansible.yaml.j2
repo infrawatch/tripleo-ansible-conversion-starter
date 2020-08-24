@@ -1,0 +1,113 @@
+heat_template_version: rocky
+
+description: Configure {{ myservice }} using ansible
+
+###############################################################################
+# NOTE: Contents of this files are based on
+# https://docs.openstack.org/tripleo-docs/latest/developer/tht_walkthrough/service_template_sections.html#ansible-related-parameters
+###############################################################################
+
+parameters:
+  # These following parameters are needed by TripleO
+  EndpointMap:
+    default: {}
+    description: Mapping of service endpoint -> protocol. Typically set
+                 via parameter_defaults in the resource registry.
+    type: json
+  ServiceData:
+    default: {}
+    description: Dictionary packing service data
+    type: json
+  ServiceNetMap:
+    default: {}
+    description: Mapping of service_name -> network name. Typically set
+                 via parameter_defaults in the resource registry.  This
+                 mapping overrides those in ServiceNetMapDefaults.
+    type: json
+  DefaultPasswords:
+    default: {}
+    type: json
+  RoleName:
+    default: ''
+    description: Role name on which the service is applied
+    type: string
+  RoleParameters:
+    default: {}
+    description: Parameters specific to the role
+    type: json
+
+  # TODO: remove this comment
+  # These are passed through from THT
+  Container{{ myservice_titlecase }}Image:
+    description: image
+    type: string
+  Container{{ myservice_titlecase }}ConfigImage:
+    description: The container image to use for the {{ myservice }} config_volume
+    type: string
+
+  #############################################################################
+  # TODO: Add in the parameters from your existing heat templates here
+  #############################################################################
+
+  {# TODO: populate this with options pulled from myservice-container-puppet.yaml, if provided #}
+
+  ##############################################################################
+  # The existing collectd parameters should be combined with
+  # {{ myservice_titlecase }}Vars and all marked for deprecation.
+  # They will be accepted for backwards compatibility, but new deployments
+  # should add the vars directly into the {{ myservice_titlecase }}Vars
+  # parameter, which will not require anymore changes in THT to add new params.
+  ##############################################################################
+  {{ myservice_titlecase }}Vars:
+    default: {}
+    description: Hash of {{ myservice }} variables used to configure the {{ myservice }} role.
+    tags:
+      - role_specific
+    type: json
+
+resources:
+  ContainersCommon:
+    type: ../containers-common.yaml
+
+  RoleParametersValue:
+    type: OS::Heat::Value
+    properties:
+      type: json
+      value:
+        map_merge:
+          - tripleo_role_name: {get_param: RoleName}
+          #####################################################################
+          # The first items in this list should be any existing
+          # {{ myservice}}-related parameters, using a new key that will be
+          # available in the tripleo_{{myservice }} ansible role.
+          #####################################################################
+          - legacy_param: { get_param: LegacyParam }
+          #####################################################################
+          # The last element should be the {{ myservice_titlecase }}Vars, which
+          # overides any previous deprecated metric.
+          #####################################################################
+          - { get_param: {{ myservice_titlecase }}Vars }
+
+outputs:
+  role_data:
+    description: Role data for the {{ myservice_titlecase }} service
+    value:
+      service_name: {{ myservice }}
+      kolla_config:
+      # TODO(efoley): Does this need to be pushed to ansible?
+      # Leaving it here should be okay, and it should work as long as the
+      # files are in the right place on the host
+      docker_config:
+        #######################################################################
+        # TODO: Add in the docker_config section from the original
+        # {{ myservice }}-container-puppet.yaml file
+        #######################################################################
+{% for deploy_stage in deploy_stages %}
+      {{ deploy_stage }}:
+        - name: "{{ myservice_titlecase }} {{ deploy_stage }} tasks"
+          import_role:
+            name: tripleo_{{ myservice }}
+          vars:
+            - deploy_stage: "{{ deploy_stage }}"
+            - {get_attr: [RoleParametersValue, value]}
+{% endfor %}
