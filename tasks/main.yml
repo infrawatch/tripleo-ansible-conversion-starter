@@ -11,6 +11,7 @@
       - fast_forward_upgrade_tasks
 
 - name: "Parse existing tht template"
+  when: "{{ tht_input is defined }}"
   block:
     - shell: |
         cat {{ tht_input }}
@@ -18,7 +19,9 @@
     - set_fact:
         tht: "{{ heat_template.stdout | from_yaml }}"
         tht_template_output_dir: "{{ tht_input | dirname }}"
-  when: "{{ tht_input is defined }}"
+    - set_fact:
+        deploy_stages: "{{ tht.outputs.role_data.value | select('match', '.*_tasks')| list }}"
+        puppet_config: "{{ tht.outputs.role_data.value.puppet_config }}"
 
 - name: "Render the tripleo_{{ myservice }} role."
   include_tasks: tripleo_myservice.yml

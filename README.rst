@@ -43,6 +43,5 @@ in the same directory as the existing template.
 
 TODO
 ----
-* Detect the deploy_stages from tht input
 * Create the <deploy_stage>.yml tasks from existing sections in THT
 * Add in the param renaming/merging with MyServiceVars
