@@ -3,10 +3,11 @@
   block:
     - set_fact:
         tht_template: "THT/new-myservice-container-ansible.yaml.j2"
-      when: tht_input == ''
+      when: "{{ tht_input is not defined }}"
     - set_fact:
         tht_template: "THT/myservice-container-ansible.yaml.j2"
-      when: tht_input != '' 
+      when: "{{ tht_input is defined }}"
+
 - name: Create {{ myservice }}-container-ansible.yaml template.
   template:
     src: "{{ tht_template }}"

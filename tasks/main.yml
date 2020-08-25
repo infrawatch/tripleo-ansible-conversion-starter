@@ -9,8 +9,6 @@
       - external_deploy_tasks
       - deploy_steps_tasks
       - fast_forward_upgrade_tasks
-    #tht_input: ~/tripleo-ansible-deployment/tripleo-heat-templates/deployment/metrics/collectd-container-puppet.yaml
-    tht_input: ''
 
 - name: "Parse existing tht template"
   block:
@@ -19,7 +17,8 @@
       register: heat_template
     - set_fact:
         tht: "{{ heat_template.stdout | from_yaml }}"
-  when: tht_input != ''
+        tht_template_output_dir: "{{ tht_input | dirname }}"
+  when: "{{ tht_input is defined }}"
 
 - name: "Render the tripleo_{{ myservice }} role."
   include_tasks: tripleo_myservice.yml

@@ -38,10 +38,11 @@ To try out this feature, pass the ``tht_input`` extra parameter to ansible::
 
    ansible-playbook -i defauly.inv start_ansibilisation.yml -e tht_input=/path/to/existing/template
 
+If a ``tht_input`` is passed, the ``<myservice>-container-ansible.yaml`` is put
+in the same directory as the existing template.
+
 TODO
 ----
-
-* Automatically parse the output location for tht from the tht_input var
 * Add kolla config section from existing template
 * Add docker_config section from existing template
 * Detect the deploy_stages from tht input
