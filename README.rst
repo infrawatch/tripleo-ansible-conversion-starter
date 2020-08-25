@@ -24,3 +24,25 @@ You can override these by modifying the ``default.inv`` file, or by passing
 extra vars to ansible-playbook::
 
    ansible-playbook -i defauly.inv start_ansibilisation.yml -e myservice=someotherservice
+
+Limitations
+-----------
+
+Currently, this tool only supports setting up a bare skeleton, as if for a new
+service, and it is up to the user to port over functionality/logic from the
+existing tripleo heat template.
+Work is in progress on parsing existing THT templates and doing more of the
+set-up work for porting to using ansible for deployment.
+
+To try out this feature, pass the ``tht_input`` extra parameter to ansible::
+
+   ansible-playbook -i defauly.inv start_ansibilisation.yml -e tht_input=/path/to/existing/template
+
+TODO
+----
+
+* Automatically parse the output location for tht from the tht_input var
+* Add kolla config section from existing template
+* Add docker_config section from existing template
+* Detect the deploy_stages from tht input
+* Create the <deploy_stage>.yml tasks from existing sections in THT

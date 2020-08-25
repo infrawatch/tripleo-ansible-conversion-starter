@@ -1,7 +1,7 @@
 ---
 - name: Create the output dir
   file:
-    path: "{{tripleo_myservice_dir }}/tasks/"
+    path: "{{ tripleo_myservice_dir }}/tasks/"
     state: directory
 
 - name: Render main.yml for tripleo_{{ myservice }} role

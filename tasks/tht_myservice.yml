@@ -1,5 +1,13 @@
 ---
+- name: "Choose template source for {{ myservice }}-container-ansible.yaml"
+  block:
+    - set_fact:
+        tht_template: "THT/new-myservice-container-ansible.yaml.j2"
+      when: tht_input == ''
+    - set_fact:
+        tht_template: "THT/myservice-container-ansible.yaml.j2"
+      when: tht_input != '' 
 - name: Create {{ myservice }}-container-ansible.yaml template.
   template:
-    src: THT/myservice-container-ansible.yaml.j2
+    src: "{{ tht_template }}"
     dest: "{{ tht_template_output_dir }}/{{ myservice }}-container-ansible.yaml"

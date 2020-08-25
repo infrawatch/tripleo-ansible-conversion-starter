@@ -1,0 +1,113 @@
+heat_template_version: rocky
+
+description: Configure {{ myservice }} using ansible
+
+###############################################################################
+# NOTE: Contents of this files are based on
+# https://docs.openstack.org/tripleo-docs/latest/developer/tht_walkthrough/service_template_sections.html#ansible-related-parameters
+###############################################################################
+
+parameters:
+  # These following parameters are needed by TripleO
+  EndpointMap:
+    default: {}
+    description: Mapping of service endpoint -> protocol. Typically set
+                 via parameter_defaults in the resource registry.
+    type: json
+  ServiceData:
+    default: {}
+    description: Dictionary packing service data
+    type: json
+  ServiceNetMap:
+    default: {}
+    description: Mapping of service_name -> network name. Typically set
+                 via parameter_defaults in the resource registry.  This
+                 mapping overrides those in ServiceNetMapDefaults.
+    type: json
+  DefaultPasswords:
+    default: {}
+    type: json
+  RoleName:
+    default: ''
+    description: Role name on which the service is applied
+    type: string
+  RoleParameters:
+    default: {}
+    description: Parameters specific to the role
+    type: json
+
+  Container{{ myservice_titlecase }}Image:
+    description: image
+    type: string
+  Container{{ myservice_titlecase }}ConfigImage:
+    description: The container image to use for the {{ myservice }} config_volume
+    type: string
+
+  #############################################################################
+  # TODO: Add in additional parameters here, if you have an existing service
+  # It's recommended to use the {{ myservice_titlecase }}Vars below to pass
+  # in parameters for new ansible-based services.
+  #############################################################################
+
+  {{ myservice_titlecase }}Vars:
+    default: {}
+    description: Hash of {{ myservice }} variables used to configure the {{ myservice }} role.
+    tags:
+      - role_specific
+    type: json
+
+resources:
+  ContainersCommon:
+    type: ../containers-common.yaml
+
+  RoleParametersValue:
+    type: OS::Heat::Value
+    properties:
+      type: json
+      value:
+        map_merge:
+          - tripleo_role_name: {get_param: RoleName}
+          #####################################################################
+          # The first items in this list should be any existing
+          # {{ myservice}}-related parameters, {only if there are
+          # legacy params), using a new key that will be available in the
+          # tripleo_{{myservice }} ansible role.
+          #####################################################################
+          # For example:
+          # - legacy_param: { get_param: LegacyParam }
+          #####################################################################
+          # The last element should be the {{ myservice_titlecase }}Vars, which
+          # overides any previous deprecated metric.
+          #####################################################################
+          - { get_param: {{ myservice_titlecase }}Vars }
+
+outputs:
+  role_data:
+    description: Role data for the {{ myservice_titlecase }} service
+    value:
+      service_name: {{ myservice }}
+      #########################################################################
+      # TODO: Uncomment below and add in your kolla_config section
+      #########################################################################
+      # kolla_config:
+      #########################################################################
+      #########################################################################
+      # TODO: Uncoment below and add in your docker_config
+      #########################################################################
+      # docker_config:
+      #########################################################################
+
+      #########################################################################
+      # For the specified deploy_stages, define an ansible task that will call
+      # the relevant tasks from teh generated tripleo_{{myservice}} role
+      #########################################################################
+
+      {%- for deploy_stage in deploy_stages -%}
+      {{ deploy_stage }}:
+        - name: "{{ myservice_titlecase }} {{ deploy_stage }} tasks"
+          import_role:
+            name: tripleo_{{ myservice }}
+          vars:
+            - deploy_stage: "{{ deploy_stage }}"
+            - {get_attr: [RoleParametersValue, value]}
+      {%- endfor -%}
