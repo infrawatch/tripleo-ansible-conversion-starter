@@ -1,10 +1,17 @@
-heat_template_version: rocky
+heat_template_version: {{ tht.heat_template_version }}
 
-description: Configure {{ myservice }} using ansible
+description: >
+  {{ tht.description | indent(width=2, indentfirst=false) }}
 
 ###############################################################################
 # NOTE: Contents of this files are based on
 # https://docs.openstack.org/tripleo-docs/latest/developer/tht_walkthrough/service_template_sections.html#ansible-related-parameters
+###############################################################################
+
+###############################################################################
+# TODO: Check the indentation on each section that's imported from the
+# {{ myservice }}-container-puppet.yaml template
+# There's a known issue with to_nice_yaml, that doesn't indent list elements
 ###############################################################################
 
 parameters:
@@ -29,8 +36,10 @@ parameters:
     type: json
 
 resources:
-  ContainersCommon:
-    type: ../containers-common.yaml
+  #############################################################################
+  # TODO: Check that indentation is correct (list items don't indent)
+  #############################################################################
+  {{ tht.resources | to_nice_yaml(width=80, indent=2) | indent(width=2, indentfirst=false)}}
 
   RoleParametersValue:
     type: OS::Heat::Value
@@ -44,7 +53,7 @@ resources:
           # {{ myservice}}-related parameters, using a new key that will be
           # available in the tripleo_{{myservice }} ansible role.
           #####################################################################
-#  TODO(efoley): add a loop here to add in existing params with a snakecase var#
+          #  TODO(efoley): add a loop here to add in existing params with a snakecase var#
           - legacy_param: { get_param: LegacyParam }
           #####################################################################
           # The last element should be the {{ myservice_titlecase }}Vars, which
@@ -54,16 +63,25 @@ resources:
 
 outputs:
   role_data:
-    description: Role data for the {{ myservice_titlecase }} service
+    description: {{ tht.outputs.role_data.description }}
     value:
       service_name: {{ myservice }}
+      #########################################################################
+      # TODO: Check that indentation is correct
+      #########################################################################
+      # TODO: Check that the output is correct, some heat functional are
+      # called here, and they get formatted with the rest of the yaml
+      #########################################################################
       kolla_config:
-      # TODO: add in existing kolla config from tht.outputs.role_data.value.kolla_config
+        {{ tht.outputs.role_data.value.kolla_config | to_nice_yaml(width=72, indent=2) | indent(width=8, indentfirst=false) }}
+      #########################################################################
+      # TODO: Check that indentation is correct
+      #########################################################################
+      # TODO: Check that the output is correct, some heat functional are
+      # called here, and they get formatted with the rest of the yaml
+      #########################################################################
       docker_config:
-        #######################################################################
-        # TODO: Add in the docker_config section from the original
-        # {{ myservice }}-container-puppet.yaml file
-        #######################################################################
+        {{ tht.outputs.role_data.value.docker_config | to_nice_yaml(width=72, indent=2) | indent(width=8, indentfirst=false) }}
 
 ## TODO(efoley): parse the tht.outputs.role_data.value.*_tasks and make a list of deploy_stages
 ## Keep this here, but add the existing ansible stuff to the tripleo_{{myservice}} role tasks
@@ -75,4 +93,5 @@ outputs:
           vars:
             - deploy_stage: "{{ deploy_stage }}"
             - {get_attr: [RoleParametersValue, value]}
+
 {% endfor %}
