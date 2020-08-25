@@ -8,7 +8,7 @@ description: Configure {{ myservice }} using ansible
 ###############################################################################
 
 parameters:
-  {{ tht.parameters | to_nice_yaml(width=80, indent=2) | indent(width=2,indentfirst=true) }}
+  {{ tht.parameters | to_nice_yaml(width=80, indent=2) | indent(width=2,indentfirst=false) }}
 
   ##############################################################################
   # The existing collectd parameters will be combined with
