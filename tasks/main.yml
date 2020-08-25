@@ -14,3 +14,6 @@
 
 - name: "Render the {{ myservice }}-container-ansible.yaml template."
   include_tasks: tht_myservice.yml
+
+- debug:
+    msg: "You can find the Tripleo Heat template at {{ tht_template_output_dir }}/{{ myservice }}-container-ansible.yaml and the tripleo_{{ myservice }} role in {{ tripleo_myservice_dir }}"
