@@ -1,6 +1,7 @@
 ---
 ###############################################################################
-# TODO: Add the tasks in here for {{ deploy_stage }} deploy stage in
-# tripleo_{{ myservice }} role
+# TODO: Check for incorrectly imported Heat functions e.g. get_param, which is
+# formatted as yaml here, and replace with the right var that was passed to
+# ansible via RoleParametersValue
 ###############################################################################
-
+{{ tht.outputs.role_data.value[deploy_stage] | to_nice_yaml(indent=2) | indent(width=0, indentfirst=false) }}
