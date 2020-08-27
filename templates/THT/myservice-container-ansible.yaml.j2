@@ -1,8 +1,8 @@
+{%- import 'templates/macros.yml' as macros -%}
 heat_template_version: {{ tht.heat_template_version }}
 
 description: >
   {{ tht.description | indent(width=2, indentfirst=false) }}
-
 ###############################################################################
 # NOTE: Contents of this files are based on
 # https://docs.openstack.org/tripleo-docs/latest/developer/tht_walkthrough/service_template_sections.html#ansible-related-parameters
@@ -47,17 +47,23 @@ resources:
       type: json
       value:
         map_merge:
-          - tripleo_role_name: {get_param: RoleName}
           #####################################################################
-          # The first items in this list should be any existing
-          # {{ myservice}}-related parameters, using a new key that will be
-          # available in the tripleo_{{myservice }} ansible role.
+          # The values here will be available in the tripleo_{{ myservice }}
+          # (and the {{ myservice }} ansible role.
           #####################################################################
-          #  TODO(efoley): add a loop here to add in existing params with a snakecase var#
-          - legacy_param: { get_param: LegacyParam }
+          # TODO: Update names as appropriate, consider using tripleo_* as a
+          # prefix for vars that will be used by tripleo_{{ myservice }} role
+          # and {{ myservice }}_* for vars that are intended to be passed
+          # straight through to the ansible_{{ myservice }} role, so that they
+          # can be set and overwritten in the {{ myservice_titlecase }}Vars
+          # param that will be used going forward.
+          #####################################################################
+{% for param in tht.parameters %}
+          - {{ macros.snake_case(param) }}: { get_param: {{ param }} }
+{% endfor %}
           #####################################################################
           # The last element should be the {{ myservice_titlecase }}Vars, which
-          # overides any of the legacy parameters.
+          # overides any of the legacy parameters above.
           #####################################################################
           - { get_param: {{ myservice_titlecase }}Vars }
 

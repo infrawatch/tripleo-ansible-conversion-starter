@@ -1,0 +1,4 @@
+{% macro snake_case(var) %}
+{{ var | regex_replace('([A-Z]+)', '_\\1' ) | lower | regex_replace('^_') }}{% endmacro %}
+
+{# {%  set snake_case = snake_case %} #}
