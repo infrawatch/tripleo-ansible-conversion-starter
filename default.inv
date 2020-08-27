@@ -1,0 +1,8 @@
+localhost ansible_connection=local
+
+[localhost]
+localhost
+
+[localhost:vars]
+myservice=test
+output_dir=~/output

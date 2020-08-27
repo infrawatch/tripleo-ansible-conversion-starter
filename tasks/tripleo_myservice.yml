@@ -1,0 +1,19 @@
+---
+- name: Create the output dir
+  file:
+    path: "{{tripleo_myservice_dir }}/tasks/"
+    state: directory
+
+- name: Render main.yml for tripleo_{{ myservice }} role
+  template:
+    src: tripleo_myservice/tasks/main.yml.j2
+    dest: "{{ tripleo_myservice_dir }}/tasks/main.yml"
+    force: yes
+
+- name: Render tasks for each deploy_stage
+  template:
+    src: tripleo_myservice/tasks/deploy_stage.yml.j2
+    dest: "{{ tripleo_myservice_dir }}/tasks/{{ item }}.yml"
+  vars:
+    deploy_stage: "{{ item }}"
+  loop: "{{ deploy_stages }}"

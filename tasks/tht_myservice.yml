@@ -1,0 +1,5 @@
+---
+- name: Create {{ myservice }}-container-ansible.yaml template.
+  template:
+    src: THT/myservice-container-ansible.yaml.j2
+    dest: "{{ tht_template_output_dir }}/{{ myservice }}-container-ansible.yaml"
