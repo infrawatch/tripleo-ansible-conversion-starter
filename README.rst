@@ -36,7 +36,7 @@ set-up work for porting to using ansible for deployment.
 
 To try out this feature, pass the ``tht_input`` extra parameter to ansible::
 
-   ansible-playbook -i defauly.inv start_ansibilisation.yml -e tht_input=/path/to/existing/template
+   ansible-playbook -i default.inv start_ansibilisation.yml -e tht_input=/path/to/existing/template
 
 If a ``tht_input`` is passed, the ``<myservice>-container-ansible.yaml`` is put
 in the same directory as the existing template.
