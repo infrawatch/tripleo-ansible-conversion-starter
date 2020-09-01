@@ -8,6 +8,7 @@
       - host_prep_tasks
       - external_deploy_tasks
       - deploy_steps_tasks
+      - upgrade_tasks
       - fast_forward_upgrade_tasks
 
 - name: "Parse existing tht template"

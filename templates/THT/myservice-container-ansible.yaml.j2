@@ -89,8 +89,6 @@ outputs:
       docker_config:
         {{ tht.outputs.role_data.value.docker_config | to_nice_yaml(width=72, indent=2) | indent(width=8, indentfirst=false) }}
 
-## TODO(efoley): parse the tht.outputs.role_data.value.*_tasks and make a list of deploy_stages
-## Keep this here, but add the existing ansible stuff to the tripleo_{{myservice}} role tasks
 {% for deploy_stage in deploy_stages %}
       {{ deploy_stage }}:
         - name: "{{ myservice_titlecase }} {{ deploy_stage }} tasks"
