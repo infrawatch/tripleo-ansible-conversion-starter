@@ -1,6 +1,17 @@
 ---
+{% if tht_input is defined %}
 ###############################################################################
-# TODO: Add the tasks in here for {{ deploy_stage }} deploy stage in
-# tripleo_{{ myservice }} role
+# TODO: Check for incorrectly imported Heat functions e.g. get_param, which is
+# formatted as yaml here, and replace with the right var that was passed to
+# ansible via RoleParametersValue
 ###############################################################################
+{{ tht.outputs.role_data.value[deploy_stage] | to_nice_yaml(indent=2) | indent(width=0, indentfirst=false) }}
 
+{% else %}
+###############################################################################
+# TODO: Add in the deployment logic for {{ deploy_stage }}.
+###############################################################################
+- name: Pretend to do some actions for {{ deploy_stage }}
+  debug:
+    msg: "This is the {{ deploy_stage }} step."
+{% endif %}

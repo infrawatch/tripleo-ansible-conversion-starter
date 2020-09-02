@@ -1,15 +1,31 @@
 ---
-- set_fact:
+- name: "Set facts"
+  set_fact:
     tripleo_myservice_dir: "{{ output_dir }}/tripleo_{{ myservice }}/"
-    tht_template_output_dir: "{{output_dir}}/"
+    tht_template_output_dir: "{{ output_dir }}/"
     myservice_titlecase: "{{ myservice|title }}"
     deploy_stages:
       - host_prep_tasks
       - external_deploy_tasks
       - deploy_steps_tasks
+      - upgrade_tasks
       - fast_forward_upgrade_tasks
+      - external_upgrade_tasks
 
-- name: "Render the tripleo_{{ myservice}} role."
+- name: "Parse existing tht template"
+  when: "{{ tht_input is defined }}"
+  block:
+    - command: |
+        cat {{ tht_input }}
+      register: heat_template
+    - set_fact:
+        tht: "{{ heat_template.stdout | from_yaml }}"
+        tht_template_output_dir: "{{ tht_input | dirname }}"
+    - set_fact:
+        deploy_stages: "{{ tht.outputs.role_data.value | select('match', '.*_tasks')| list }}"
+        puppet_config: "{{ tht.outputs.role_data.value.puppet_config }}"
+
+- name: "Render the tripleo_{{ myservice }} role."
   include_tasks: tripleo_myservice.yml
 
 - name: "Render the {{ myservice }}-container-ansible.yaml template."

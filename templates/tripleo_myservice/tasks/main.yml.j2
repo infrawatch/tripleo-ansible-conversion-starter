@@ -19,4 +19,4 @@
 ###############################################################################
 
 - name: Include tasks for deploy stage
-  include_tasks: {{ "{{ deploy_stage }}.yml" }}
+  include_tasks: {{ '"{{' }} deploy_stage {{ '}}' }}.yml"

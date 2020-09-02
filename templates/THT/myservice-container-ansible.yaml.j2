@@ -1,62 +1,32 @@
-heat_template_version: rocky
+{%- import 'templates/macros.yml' as macros -%}
+heat_template_version: {{ tht.heat_template_version }}
 
-description: Configure {{ myservice }} using ansible
-
+description: >
+  {{ tht.description | indent(width=2, indentfirst=false) }}
 ###############################################################################
 # NOTE: Contents of this files are based on
 # https://docs.openstack.org/tripleo-docs/latest/developer/tht_walkthrough/service_template_sections.html#ansible-related-parameters
 ###############################################################################
 
+###############################################################################
+# TODO: Check the indentation on each section that's imported from the
+# {{ myservice }}-container-puppet.yaml template
+# There's a known issue with to_nice_yaml, that doesn't indent list elements
+###############################################################################
+
 parameters:
-  # These following parameters are needed by TripleO
-  EndpointMap:
-    default: {}
-    description: Mapping of service endpoint -> protocol. Typically set
-                 via parameter_defaults in the resource registry.
-    type: json
-  ServiceData:
-    default: {}
-    description: Dictionary packing service data
-    type: json
-  ServiceNetMap:
-    default: {}
-    description: Mapping of service_name -> network name. Typically set
-                 via parameter_defaults in the resource registry.  This
-                 mapping overrides those in ServiceNetMapDefaults.
-    type: json
-  DefaultPasswords:
-    default: {}
-    type: json
-  RoleName:
-    default: ''
-    description: Role name on which the service is applied
-    type: string
-  RoleParameters:
-    default: {}
-    description: Parameters specific to the role
-    type: json
-
-  # TODO: remove this comment
-  # These are passed through from THT
-  Container{{ myservice_titlecase }}Image:
-    description: image
-    type: string
-  Container{{ myservice_titlecase }}ConfigImage:
-    description: The container image to use for the {{ myservice }} config_volume
-    type: string
-
-  #############################################################################
-  # TODO: Add in the parameters from your existing heat templates here
-  #############################################################################
-
-  {# TODO: populate this with options pulled from myservice-container-puppet.yaml, if provided #}
+  {{ tht.parameters | to_nice_yaml(width=80, indent=2) | indent(width=2,indentfirst=false) }}
 
   ##############################################################################
-  # The existing collectd parameters should be combined with
-  # {{ myservice_titlecase }}Vars and all marked for deprecation.
-  # They will be accepted for backwards compatibility, but new deployments
-  # should add the vars directly into the {{ myservice_titlecase }}Vars
-  # parameter, which will not require anymore changes in THT to add new params.
+  # The existing collectd parameters will be combined with
+  # {{ myservice_titlecase }}Vars in the RoleParametersValue below. Eventually,
+  # these legacy parameters will be deprecated in favour of passing the
+  # parameters into the {{ myservice_titlecase }}Vars param below.
+  # For backwards compatibility these legacy params will be acceptd, but will
+  # be overwritten by any element passed to {{ myservice_titlecase }}.
+  # New configs should add the vars directly into the
+  # {{ myservice_titlecase }}Var parameter, which will not require anymore
+  # changes in THT to add new params.
   ##############################################################################
   {{ myservice_titlecase }}Vars:
     default: {}
@@ -66,8 +36,10 @@ parameters:
     type: json
 
 resources:
-  ContainersCommon:
-    type: ../containers-common.yaml
+  #############################################################################
+  # TODO: Check that indentation is correct (list items don't indent)
+  #############################################################################
+  {{ tht.resources | to_nice_yaml(width=80, indent=2) | indent(width=2, indentfirst=false)}}
 
   RoleParametersValue:
     type: OS::Heat::Value
@@ -75,33 +47,48 @@ resources:
       type: json
       value:
         map_merge:
-          - tripleo_role_name: {get_param: RoleName}
           #####################################################################
-          # The first items in this list should be any existing
-          # {{ myservice}}-related parameters, using a new key that will be
-          # available in the tripleo_{{myservice }} ansible role.
+          # The values here will be available in the tripleo_{{ myservice }}
+          # (and the {{ myservice }} ansible role.
           #####################################################################
-          - legacy_param: { get_param: LegacyParam }
+          # TODO: Update names as appropriate, consider using tripleo_* as a
+          # prefix for vars that will be used by tripleo_{{ myservice }} role
+          # and {{ myservice }}_* for vars that are intended to be passed
+          # straight through to the ansible_{{ myservice }} role, so that they
+          # can be set and overwritten in the {{ myservice_titlecase }}Vars
+          # param that will be used going forward.
+          #####################################################################
+{% for param in tht.parameters %}
+          - {{ macros.snake_case(param) }}: { get_param: {{ param }} }
+{% endfor %}
           #####################################################################
           # The last element should be the {{ myservice_titlecase }}Vars, which
-          # overides any previous deprecated metric.
+          # overides any of the legacy parameters above.
           #####################################################################
           - { get_param: {{ myservice_titlecase }}Vars }
 
 outputs:
   role_data:
-    description: Role data for the {{ myservice_titlecase }} service
+    description: {{ tht.outputs.role_data.description }}
     value:
       service_name: {{ myservice }}
+      #########################################################################
+      # TODO: Check that indentation is correct
+      #########################################################################
+      # TODO: Check that the output is correct, some heat functional are
+      # called here, and they get formatted with the rest of the yaml
+      #########################################################################
       kolla_config:
-      # TODO(efoley): Does this need to be pushed to ansible?
-      # Leaving it here should be okay, and it should work as long as the
-      # files are in the right place on the host
+        {{ tht.outputs.role_data.value.kolla_config | to_nice_yaml(width=72, indent=2) | indent(width=8, indentfirst=false) }}
+      #########################################################################
+      # TODO: Check that indentation is correct
+      #########################################################################
+      # TODO: Check that the output is correct, some heat functional are
+      # called here, and they get formatted with the rest of the yaml
+      #########################################################################
       docker_config:
-        #######################################################################
-        # TODO: Add in the docker_config section from the original
-        # {{ myservice }}-container-puppet.yaml file
-        #######################################################################
+        {{ tht.outputs.role_data.value.docker_config | to_nice_yaml(width=72, indent=2) | indent(width=8, indentfirst=false) }}
+
 {% for deploy_stage in deploy_stages %}
       {{ deploy_stage }}:
         - name: "{{ myservice_titlecase }} {{ deploy_stage }} tasks"
@@ -110,4 +97,5 @@ outputs:
           vars:
             - deploy_stage: "{{ deploy_stage }}"
             - {get_attr: [RoleParametersValue, value]}
+
 {% endfor %}

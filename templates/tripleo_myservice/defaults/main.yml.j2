@@ -1,0 +1,28 @@
+{%- import 'templates/macros.yml' as macros -%}
+---
+###############################################################################
+# TODO: Add the default values in here for any of the converted heat params
+# from tripleo-heat-templates. This serves two purposes: it facilitates
+# testing, and it allows for removal of THT params in the future without
+# affecting the ansible role.
+###############################################################################
+# TODO: Check for any multi-line strings, these aren't handled by this
+# template
+###############################################################################
+{% if tht_input is defined %}
+{% for param in tht.parameters %}
+{% if tht.parameters[param].default is defined %}
+# Corresponds to {{ param }} in THT
+{% if tht.parameters[param].description is defined %}
+{{ tht.parameters[param].description | wordwrap(79) | comment('plain', prefix='', postfix='') }}
+{%- endif -%}
+{{ macros.snake_case(param) }}: {{ tht.parameters[param].default }}
+
+{% else %}
+# {{ param }} has no default set in THT, so {{ macros.snake_case(param) }}
+# will not be set, but my be passed to this role anyway.
+# {{ macros.snake_case(param) }} : <undefined>
+
+{% endif %}
+{% endfor %}
+{% endif %}
