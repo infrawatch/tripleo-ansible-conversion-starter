@@ -10,11 +10,12 @@
       - deploy_steps_tasks
       - upgrade_tasks
       - fast_forward_upgrade_tasks
+      - external_upgrade_tasks
 
 - name: "Parse existing tht template"
   when: "{{ tht_input is defined }}"
   block:
-    - shell: |
+    - command: |
         cat {{ tht_input }}
       register: heat_template
     - set_fact:
