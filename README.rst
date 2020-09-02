@@ -23,7 +23,7 @@ respectively.
 You can override these by modifying the ``default.inv`` file, or by passing
 extra vars to ansible-playbook::
 
-   ansible-playbook -i defauly.inv start_ansibilisation.yml -e myservice=someotherservice
+   ansible-playbook -i default.inv start_ansibilisation.yml -e myservice=someotherservice
 
 Limitations
 -----------
