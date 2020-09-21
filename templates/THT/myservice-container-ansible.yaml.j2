@@ -1,4 +1,5 @@
-{%- import 'templates/macros.yml' as macros -%}
+---
+{% import 'templates/macros.yml' as macros -%}
 heat_template_version: {{ tht.heat_template_version }}
 
 description: >
@@ -32,7 +33,7 @@ parameters:
     default: {}
     description: Hash of {{ myservice }} variables used to configure the {{ myservice }} role.
     tags:
-      - role_specific
+    - role_specific
     type: json
 
 resources:
@@ -47,25 +48,25 @@ resources:
       type: json
       value:
         map_merge:
-          #####################################################################
-          # The values here will be available in the tripleo_{{ myservice }}
-          # (and the {{ myservice }} ansible role.
-          #####################################################################
-          # TODO: Update names as appropriate, consider using tripleo_* as a
-          # prefix for vars that will be used by tripleo_{{ myservice }} role
-          # and {{ myservice }}_* for vars that are intended to be passed
-          # straight through to the ansible_{{ myservice }} role, so that they
-          # can be set and overwritten in the {{ myservice_titlecase }}Vars
-          # param that will be used going forward.
-          #####################################################################
+        #####################################################################
+        # The values here will be available in the tripleo_{{ myservice }}
+        # (and the {{ myservice }} ansible role.
+        #####################################################################
+        # TODO: Update names as appropriate, consider using tripleo_* as a
+        # prefix for vars that will be used by tripleo_{{ myservice }} role
+        # and {{ myservice }}_* for vars that are intended to be passed
+        # straight through to the ansible_{{ myservice }} role, so that they
+        # can be set and overwritten in the {{ myservice_titlecase }}Vars
+        # param that will be used going forward.
+        #####################################################################
 {% for param in tht.parameters %}
-          - {{ macros.snake_case(param) }}: { get_param: {{ param }} }
+        - {{ macros.snake_case(param) }}: { get_param: {{ param }} }
 {% endfor %}
-          #####################################################################
-          # The last element should be the {{ myservice_titlecase }}Vars, which
-          # overides any of the legacy parameters above.
-          #####################################################################
-          - { get_param: {{ myservice_titlecase }}Vars }
+        #####################################################################
+        # The last element should be the {{ myservice_titlecase }}Vars, which
+        # overides any of the legacy parameters above.
+        #####################################################################
+        - { get_param: {{ myservice_titlecase }}Vars }
 
 outputs:
   role_data:
@@ -91,11 +92,11 @@ outputs:
 
 {% for deploy_stage in deploy_stages %}
       {{ deploy_stage }}:
-        - name: "{{ myservice_titlecase }} {{ deploy_stage }} tasks"
-          import_role:
-            name: tripleo_{{ myservice }}
-          vars:
-            - deploy_stage: "{{ deploy_stage }}"
-            - {get_attr: [RoleParametersValue, value]}
+      - name: "{{ myservice_titlecase }} {{ deploy_stage }} tasks"
+        import_role:
+          name: tripleo_{{ myservice }}
+        vars:
+        - deploy_stage: "{{ deploy_stage }}"
+        - {get_attr: [RoleParametersValue, value]}
 
-{% endfor %}
+{%- endfor %}
