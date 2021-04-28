@@ -7,12 +7,6 @@
     - tasks
     - defaults
 
-- name: Render main.yml for tripleo_{{ myservice }} role
-  template:
-    src: tripleo_myservice/tasks/main.yml.j2
-    dest: "{{ tripleo_myservice_dir }}/tasks/main.yml"
-    force: yes
-
 - name: Add the defaults/main.yml
   template:
     src: tripleo_myservice/defaults/main.yml.j2

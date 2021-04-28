@@ -17,7 +17,6 @@ description: >
 
 parameters:
   {{ tht.parameters | to_nice_yaml(width=80, indent=2) | indent(width=2,indentfirst=false) }}
-
   ##############################################################################
   # The existing collectd parameters will be combined with
   # {{ myservice_titlecase }}Vars in the RoleParametersValue below. Eventually,
@@ -31,10 +30,14 @@ parameters:
   ##############################################################################
   {{ myservice_titlecase }}Vars:
     default: {}
-    description: Hash of {{ myservice }} variables used to configure the {{ myservice }} role.
+    description: >
+      Hash of {{ myservice }} variables used to configure the {{ myservice }} role.
     tags:
     - role_specific
     type: json
+
+conditions:
+  role_specific_required: {not: {equals: [{get_param: [RoleParameters, {{ myservice_titlecase }}Vars]}, ""]}}
 
 resources:
   #############################################################################
@@ -52,21 +55,18 @@ resources:
         # The values here will be available in the tripleo_{{ myservice }}
         # (and the {{ myservice }} ansible role.
         #####################################################################
-        # TODO: Update names as appropriate, consider using tripleo_* as a
-        # prefix for vars that will be used by tripleo_{{ myservice }} role
-        # and {{ myservice }}_* for vars that are intended to be passed
-        # straight through to the ansible_{{ myservice }} role, so that they
-        # can be set and overwritten in the {{ myservice_titlecase }}Vars
-        # param that will be used going forward.
-        #####################################################################
 {% for param in tht.parameters %}
-        - {{ macros.snake_case(param) }}: { get_param: {{ param }} }
+        - tripleo_{{ macros.snake_case(param) }}: { get_param: {{ param }} }
 {% endfor %}
         #####################################################################
         # The last element should be the {{ myservice_titlecase }}Vars, which
         # overides any of the legacy parameters above.
         #####################################################################
         - { get_param: {{ myservice_titlecase }}Vars }
+        - if:
+           - role_specific_required
+           - { get_param: [RoleParameters, {{ myservice_titlecase }}Vars]}
+           - {}
 
 outputs:
   role_data:
@@ -76,7 +76,7 @@ outputs:
       #########################################################################
       # TODO: Check that indentation is correct
       #########################################################################
-      # TODO: Check that the output is correct, some heat functional are
+      # TODO: Check that the output is correct, some heat functions are
       # called here, and they get formatted with the rest of the yaml
       #########################################################################
       kolla_config:
@@ -92,11 +92,19 @@ outputs:
 
 {% for deploy_stage in deploy_stages %}
       {{ deploy_stage }}:
+      #########################################################################
+      # TODO: Change this task name to be more descriptive of what happens
+      # at this stage (something similar to the imported task name should work
+      #########################################################################
       - name: "{{ myservice_titlecase }} {{ deploy_stage }} tasks"
         import_role:
           name: tripleo_{{ myservice }}
+          #####################################################################
+          # TODO: Change the name of this imported task to be descriptive
+          # e.g. "create_persistent_directories.yml"
+          #####################################################################
+          tasks_from: {{ deploy_stage }}.yml
         vars:
-        - deploy_stage: "{{ deploy_stage }}"
         - {get_attr: [RoleParametersValue, value]}
 
-{%- endfor %}
+{% endfor %}
